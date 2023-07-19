@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Text.Json;
 using Microsoft.ML.Data;
+using Microsoft.ML.OnnxRuntime;
+using SentSim.Helpers;
+using SentSim.BERTTokenizers;
 using SentSim.MachineLearning.MLModel;
 
 namespace SentSim{
@@ -9,20 +12,21 @@ namespace SentSim{
             var model = new SimModel("/home/sam/SentSim/vocab.txt",
                                 "/home/sam/models/model.onnx");
 
-            ModelOutput output = model.Predict("This movie was good.");
-
-            ModelOutput output1 = model.Predict("This movie was great.");
-             
-            for(int i = 0; i < 1000; i++){
-                model.Predict("This movie was great.");
-            }
-
+            var session = new InferenceSession("/home/sam/models/model.onnx");
             
-            var random = output.LastHiddenState.GetValues();
-            var random1 = output1.LastHiddenState.GetValues();
-
             
+          
+            var output = model.Predict("This movie was good.", session);
 
+            var outputArray = output?.ToArray();
+            
+            //float[] embeddings = outputArray[0].AsEnumerable<float>().ToArray();
+
+
+            //var inference = output?.ToList().First().AsDictionary<string, float>(); 
+
+            //Console.WriteLine(Tensors.ConvertToTensor(output[0])[0]);
+            
         }
     }
 }

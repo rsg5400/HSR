@@ -6,6 +6,8 @@ using SentSim.BERTTokenizers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Microsoft.ML.OnnxRuntime;
+using System.Reflection.Metadata.Ecma335;
 
 namespace SentSim
 {
@@ -26,17 +28,25 @@ namespace SentSim
             _predictor = new Predictor(trainedModel);
         }
 
-        public ModelOutput Predict(string sentence)
+        public IEnumerable<DisposableNamedOnnxValue> Predict(string sentence, InferenceSession session)
         {
-            
-            var tokens = _tokenizer.Tokenize(sentence);
-            
-            var input = BuildInput(tokens); 
-            
-            var predictions = _predictor.Predict(input);
 
 
-            return predictions;
+            
+            var input = BuildInput(sentence);
+
+            var output = session.Run(input);
+
+            Console.WriteLine(output.ToArray()[0].Value);
+
+            //var final = ProcessOutput(output1, tokens);
+
+            return output;
+
+
+
+           
+        
 
             //var contextStart = tokens.FindIndex(o => o.Token == Token.Separation);
 
@@ -57,22 +67,51 @@ namespace SentSim
 
        // }
 
-        private ModelInput BuildInput(List<(string Token, int Index, long SegmentIndex)> tokens)
+        private List<Microsoft.ML.OnnxRuntime.NamedOnnxValue> BuildInput(string sentence)
         {
-            var padding = Enumerable.Repeat(0L, 256 - tokens.Count).ToList();
+            
+            var tokens = _tokenizer.Tokenize(sentence);
 
-            var tokenIndexes = tokens.Select(token => (long)token.Index).Concat(padding).ToArray();
-            var segmentIndexes = tokens.Select(token => token.SegmentIndex).Concat(padding).ToArray();
-            var inputMask = tokens.Select(o => 1L).Concat(padding).ToArray();
+            var encoded = _tokenizer.Encode(tokens.Count, sentence);
 
-            return new ModelInput()
-            {
-                InputIds = tokenIndexes,
-                TokenTypeIds = segmentIndexes,
-                AttentionMask = inputMask,
-            };
+            var modelInput = new ModelInput()
+                {
+                    InputIds = encoded.Select(t => t.InputIds).ToArray(),
+                    AttentionMask = encoded.Select(t => t.AttentionMask).ToArray(),
+                    TokenTypeIds = encoded.Select(t => t.TokenTypeIds).ToArray(),
+                };
+
+            var input_ids = Tensors.ConvertToTensor(modelInput.InputIds, modelInput.InputIds.Length);
+            var attention_mask = Tensors.ConvertToTensor(modelInput.AttentionMask, modelInput.InputIds.Length);
+            var token_type_ids = Tensors.ConvertToTensor(modelInput.TokenTypeIds, modelInput.InputIds.Length);
+
+            var input = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("input_ids", input_ids), 
+                                         NamedOnnxValue.CreateFromTensor("attention_mask", attention_mask), 
+                                         NamedOnnxValue.CreateFromTensor("token_type_ids", token_type_ids) };
+
+            return input;
         }
 
-        
+        public List<string> ProcessOutput(IDisposableReadOnlyCollection<DisposableNamedOnnxValue> output, List<(string Token, int VocabularyIndex, long SegmentIndex)> tokens){
+            List<float> startLogits = (output.ToList().First().Value as IEnumerable<float>).ToList();
+            List<float> endLogits = (output.ToList().Last().Value as IEnumerable<float>).ToList();
+
+            // Get the Index of the Max value from the output lists.
+            var startIndex = startLogits.ToList().IndexOf(startLogits.Max()); 
+            var endIndex = endLogits.ToList().IndexOf(endLogits.Max());
+
+            // From the list of the original tokens in the sentence
+            // Get the tokens between the startIndex and endIndex and convert to the vocabulary from the ID of the token.
+            var predictedTokens = tokens
+                        .Skip(startIndex)
+                        .Take(endIndex + 1 - startIndex)
+                        .Select(o => _tokenizer.IdToToken((int)o.VocabularyIndex))
+                        .ToList();
+
+            return predictedTokens;
+            }
+
+             
+
     }
 }
