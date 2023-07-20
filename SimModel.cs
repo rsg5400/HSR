@@ -37,30 +37,11 @@ namespace SentSim
 
             var output = session.Run(input);
 
-            Console.WriteLine(output.ToArray()[0].Value);
 
             //var final = ProcessOutput(output1, tokens);
 
             return output;
 
-
-
-           
-        
-
-            //var contextStart = tokens.FindIndex(o => o.Token == Token.Separation);
-
-            // predictions hold the embedings and now I need to compute cosine similarity
-
-           // var predictedTokens = input.InputIds
-           //     .Skip(startIndex)
-           //     .Take(endIndex + 1 - startIndex)
-          //      .Select(o => _vocabulary[(int)o])
-          //      .ToList();
-
-            //var connectedTokens = _tokenizer.Untokenize(predictedTokens);
-
-           // return (connectedTokens, probability);
         }
        // public float CosineSimilarity(double[] VectorA, double[] VectorB){
         //    IEnumerable<float> dotProduct = CosineSim.ComputeDotProduct(VectorA, VectorB);
@@ -92,24 +73,11 @@ namespace SentSim
             return input;
         }
 
-        public List<string> ProcessOutput(IDisposableReadOnlyCollection<DisposableNamedOnnxValue> output, List<(string Token, int VocabularyIndex, long SegmentIndex)> tokens){
-            List<float> startLogits = (output.ToList().First().Value as IEnumerable<float>).ToList();
-            List<float> endLogits = (output.ToList().Last().Value as IEnumerable<float>).ToList();
+        // public List<string> ProcessOutput(IDisposableReadOnlyCollection<DisposableNamedOnnxValue> output, List<(string Token, int VocabularyIndex, long SegmentIndex)> tokens){
+                
 
-            // Get the Index of the Max value from the output lists.
-            var startIndex = startLogits.ToList().IndexOf(startLogits.Max()); 
-            var endIndex = endLogits.ToList().IndexOf(endLogits.Max());
 
-            // From the list of the original tokens in the sentence
-            // Get the tokens between the startIndex and endIndex and convert to the vocabulary from the ID of the token.
-            var predictedTokens = tokens
-                        .Skip(startIndex)
-                        .Take(endIndex + 1 - startIndex)
-                        .Select(o => _tokenizer.IdToToken((int)o.VocabularyIndex))
-                        .ToList();
-
-            return predictedTokens;
-            }
+        //     }
 
              
 
