@@ -6,16 +6,19 @@ namespace SentSim.Helpers{
     
         public static Tensor<long> ConvertToTensor(long[] inputArray, int inputDimension)
         {
-            // Create a tensor with the shape the model is expecting. Here we are sending in 1 batch with the inputDimension as the amount of tokens.
+            /* creates Rank 2 Tensor with length equaling the amount of tokens.
+                Dimesion in equavalent to batch size which with one sentence is one.
+            */
+
             Tensor<long> input = new DenseTensor<long>(new[] { 1, inputDimension });
 
             // Loop through the inputArray (InputIds, AttentionMask and TypeIds)
             for (var i = 0; i < inputArray.Length; i++)
             {
-                // Add each to the input Tenor result.
-                // Set index and array value of each input Tensor.
+                /* adding input value to Tensor. input[batchNum,tokenIndex] = input[tokenIndex] */
                 input[0,i] = inputArray[i];
             }
+           // Console.WriteLine(input.Length);
             return input;
         }
     }
