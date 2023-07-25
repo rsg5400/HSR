@@ -1,7 +1,7 @@
 using Microsoft.ML.Data;
 
-namespace SentSim.MachineLearning.MLModel{
-    public class ModelInput{
+namespace SentSim.MachineLearning.ModelInputs{
+    public class BERTModelInput{
 
         [ColumnName("input_ids")]
         public long[] InputIds { get; set; }

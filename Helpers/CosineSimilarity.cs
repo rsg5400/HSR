@@ -5,7 +5,9 @@ using System.Runtime.Intrinsics.Arm;
 namespace tester{
     public static class MLMath{
         public static float CosineSimilarity (float[] vectorA, float[] vectorB){
-            
+            /*
+                cos(theta) = (a dot b)/(mag(a)*mag(b))
+            */
             float dotProduct = Dp(vectorA, vectorB);
             float magA = (float)Math.Sqrt(Dp(vectorA, vectorA));
             float magB = (float)Math.Sqrt(Dp(vectorB, vectorB));

@@ -3,22 +3,30 @@ using Microsoft.ML.OnnxRuntime.Tensors;
 namespace SentSim.Helpers{
     public class SentenceEmbeddingGenerator
     {
-        // Function to perform mean pooling on word embeddings with attention mask
+        /*Creates sentence embeddings from word embeddings and attention mask*/
         public static float[] MeanPoolingWithAttention(Tensor<float> modelOutput, Tensor<long> attentionMask)
         {
+            //turns attention mask into float array
             long[] attentionMaskArr = attentionMask.ToArray();
+            /*word embeddings is an array of tokens*embeddingsLen*/
             float[] wordEmbeddings = modelOutput.ToArray();
             ReadOnlySpan<int> dimesions = modelOutput.Dimensions;
-            int tokens = dimesions[1];
+            //number of tokens/words
+            int numTokens = dimesions[1];
+            //size of each word embedding
             int embeddingsLen = dimesions[2];
             float[] sentenceEmbedding = new float[embeddingsLen];
 
 
-            for (int i = 0; i < tokens; i++)
+            for (int i = 0; i < numTokens; i++)
             {
+                //grabs attention mask for that token
                 double weight = attentionMaskArr[i];
                 for (int j = 0; j < embeddingsLen; j++)
                 {
+                    /*Adds equaivalent value for each token into a sentence embedding. Since wordEmbeddings is 
+                      a one dimesional array that has multiple different words you can think of this like being
+                      wordEmbeddings[i][j] if it had been a two dimesional array*/
                     sentenceEmbedding[j] += (float)(wordEmbeddings[(embeddingsLen*i)+j] * weight);
                 }
             }
@@ -27,43 +35,31 @@ namespace SentSim.Helpers{
             long totalAttention = attentionMask.Sum();
             for (int i = 0; i < embeddingsLen; i++)
             {
+                //average each value for sentence embeddings
                 sentenceEmbedding[i] /= totalAttention;
             }
             
             return sentenceEmbedding;
         }
 
-        public static float[] Normalize(float[] input, int dimension = 0)
+        public static float[] Normalize(float[] input, float p = 2, int dim = 1, double eps = 1e-9)
         {
-            if (input == null || input.Length == 0)
-            {
-                throw new ArgumentException("Input array cannot be null or empty.");
-            }
+            /*  
+            Lp = (v1^p + v2^p + v3^p)**1/p  
+            */
 
-            int rows, cols;
-            if (dimension == 0)
-            {
-                rows = input.Length;
-                cols = 1;
-            }
-            else
-            {
-                rows = 1;
-                cols = input.Length;
-            }
-
-            // Calculate L2 norm along the specified dimension
+            // Calculate Lp norm along the specified dimension
             double sumSquares = 0.0;
             for (int i = 0; i < input.Length; i++)
             {
-                sumSquares += input[i] * input[i];
+                sumSquares += Math.Pow(input[i],p);
             }
 
-            double sqrtSumSquares = Math.Sqrt(sumSquares);
+            double sqrtSumSquares = Math.Pow(sumSquares, 1/p);
 
             // Avoid division by zero
-            double epsilon = 1e-9;
-            double norm = Math.Max(sqrtSumSquares, epsilon);
+            
+            double norm = Math.Max(sqrtSumSquares, eps);
 
             // Normalize the input array
             float[] normalizedArray = new float[input.Length];
