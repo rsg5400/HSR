@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace SentSim.Helpers
+namespace NLP.Helpers
 {
     public static class FileReader
     {

@@ -1,6 +1,6 @@
 using Microsoft.ML.OnnxRuntime.Tensors;
 
-namespace SentSim.Helpers{
+namespace NLP.Helpers{
     public static class Tensors{
 
     

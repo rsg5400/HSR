@@ -1,6 +1,6 @@
 using Microsoft.ML.OnnxRuntime.Tensors;
 
-namespace SentSim.Helpers{
+namespace NLP.Helpers{
     public class SentenceEmbeddingGenerator
     {
         /*Creates sentence embeddings from word embeddings and attention mask*/

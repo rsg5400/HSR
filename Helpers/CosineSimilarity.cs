@@ -2,7 +2,7 @@ using System.Net.NetworkInformation;
 using System.Reflection.PortableExecutable;
 using System.Runtime.Intrinsics.Arm;
 
-namespace tester{
+namespace NLP.Helpers{
     public static class MLMath{
         public static float CosineSimilarity (float[] vectorA, float[] vectorB){
             /*
