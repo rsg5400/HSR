@@ -136,5 +136,12 @@ namespace NLP.Tokenizers.WordPiece{
         }
 
         protected abstract IEnumerable<string> TokenizeSentence(string text);
+
+        /*Other functions to possible be implemneted
+            1. Function to get Postional IDS
+            2. function to mask certain heads
+        */
+
     }
+
 }

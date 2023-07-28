@@ -59,7 +59,7 @@ namespace NLP.Pipelines
             /* ex:   [CLS] this movie is bad [SEP]
             encoded =  [(101,0,1), (2023,0,1), (3185,0,1), (2003,0,1), (2919,0,1), (102,0,1)]
             */
-
+            
            //creates model input from encoded
             var modelInput = new MPNETModelInputs()
                 {
